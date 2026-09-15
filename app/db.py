@@ -11,7 +11,17 @@ class Base(DeclarativeBase):
 
 
 settings = get_settings()
+if not settings.database_url.startswith("postgresql+asyncpg://"):
+    database_scheme = settings.database_url.split("://", 1)[0]
+    raise RuntimeError(
+        "DATABASE_URL must use the postgresql+asyncpg:// scheme after normalization; "
+        f"got {database_scheme!r}"
+    )
+
 engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+if engine.url.drivername != "postgresql+asyncpg":
+    raise RuntimeError(f"SQLAlchemy engine must use postgresql+asyncpg, got {engine.url.drivername!r}")
+
 SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
