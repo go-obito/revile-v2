@@ -34,6 +34,7 @@ export interface PostRead {
   status: PostStatus;
   is_breaking: boolean;
   author_id: number;
+  author_name?: string | null;
   editor_id: number | null;
   published_at: string | null;
   updated_at: string;

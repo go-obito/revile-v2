@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.cache import cache_get, cache_set, invalidate_post
 from app.db import get_db
@@ -16,6 +17,11 @@ router = APIRouter(prefix="/posts", tags=["posts"])
 
 def encode_cursor(post: Post) -> str:
     value = f"{(post.published_at or post.created_at).isoformat()}|{post.id}"
+    return base64.urlsafe_b64encode(value.encode()).decode()
+
+
+def encode_manage_cursor(post: Post) -> str:
+    value = f"{post.updated_at.isoformat()}|{post.id}"
     return base64.urlsafe_b64encode(value.encode()).decode()
 
 
@@ -54,6 +60,32 @@ async def list_posts(request: Request, cursor: str | None = None, limit: int = Q
     result = PostList(items=posts, next_cursor=next_cursor)
     await cache_set(cache_key, result.model_dump(mode="json"), 75)
     return result
+
+
+@router.get("/manage", response_model=PostList)
+async def list_manage_posts(cursor: str | None = None, limit: int = Query(20, ge=1, le=100), post_status: PostStatus | None = Query(default=None, alias="status"), db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR))) -> PostList:
+    position = decode_cursor(cursor) if cursor else None
+    query = select(Post).options(selectinload(Post.author))
+    if user.role == UserRole.AUTHOR:
+        query = query.where(Post.author_id == user.id)
+    if post_status:
+        query = query.where(Post.status == post_status)
+    if position:
+        timestamp, post_id = position
+        query = query.where(or_(Post.updated_at < timestamp, and_(Post.updated_at == timestamp, Post.id < post_id)))
+    query = query.order_by(desc(Post.updated_at), desc(Post.id)).limit(limit + 1)
+    posts = list((await db.scalars(query)).unique().all())
+    next_cursor = encode_manage_cursor(posts.pop()) if len(posts) > limit else None
+    items = [PostRead.model_validate(post).model_copy(update={"author_name": post.author.name}) for post in posts]
+    return PostList(items=items, next_cursor=next_cursor)
+
+
+@router.get("/manage/{post_id}", response_model=PostRead)
+async def get_manage_post(post_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR))) -> PostRead:
+    post = await db.scalar(select(Post).options(selectinload(Post.author)).where(Post.id == post_id))
+    if not post or (user.role == UserRole.AUTHOR and post.author_id != user.id):
+        raise HTTPException(status_code=404, detail="Post not found")
+    return PostRead.model_validate(post).model_copy(update={"author_name": post.author.name})
 
 
 @router.get("/breaking", response_model=list[PostRead])

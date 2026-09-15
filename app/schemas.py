@@ -78,6 +78,7 @@ class PostRead(BaseModel):
     status: PostStatus
     is_breaking: bool
     author_id: int
+    author_name: str | None = None
     editor_id: int | None
     published_at: datetime | None
     updated_at: datetime

@@ -20,7 +20,7 @@ settings = get_settings()
 
 
 def set_refresh_cookie(response: Response, token: str) -> None:
-    response.set_cookie("refresh_token", token, httponly=True, secure=settings.cookie_secure, samesite="lax", max_age=settings.refresh_token_days * 86400, path=f"{settings.api_prefix}/auth")
+    response.set_cookie("refresh_token", token, httponly=True, secure=settings.cookie_secure, samesite="lax", max_age=settings.refresh_token_days * 86400, path="/")
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -63,4 +63,4 @@ async def logout(request: Request, response: Response, db: AsyncSession = Depend
         if stored and not stored.revoked_at:
             stored.revoked_at = datetime.now(UTC)
             await db.commit()
-    response.delete_cookie("refresh_token", path=f"{settings.api_prefix}/auth")
+    response.delete_cookie("refresh_token", path="/")

@@ -10,6 +10,7 @@ import type {
   PostList,
   PostRead,
   PostUpdate,
+  PostStatus,
   Role,
   TagRead,
   TokenResponse,
@@ -20,6 +21,7 @@ const publicApiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const serverApiUrl = process.env.INTERNAL_API_URL ?? publicApiUrl;
 
 function getApiUrl() {
+  if (typeof window !== "undefined") return "/api/v1";
   const origin = typeof window === "undefined" ? serverApiUrl : publicApiUrl;
   return origin.replace(/\/$/, "").endsWith("/api/v1")
     ? origin.replace(/\/$/, "")
@@ -86,6 +88,12 @@ export const api = {
   },
   getPost(slug: string) {
     return request<PostRead>(`/posts/${encodeURIComponent(slug)}`, { next: { revalidate: 60 } });
+  },
+  getManagePosts(params: { status?: PostStatus; cursor?: string; limit?: number }, accessToken: string) {
+    return request<PostList>(`/posts/manage${query(params)}`, { accessToken });
+  },
+  getManagePost(postId: number, accessToken: string) {
+    return request<PostRead>(`/posts/manage/${postId}`, { accessToken });
   },
   getCategories() {
     return request<CategoryRead[]>("/categories", { next: { revalidate: 300 } });

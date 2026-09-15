@@ -1,11 +1,33 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+*.pyd
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
 
-# Virtual environments
-.venv
+# Virtual environments and local environment files
+.venv/
 .env
+.env.*
+!.env.example
+
+# Local infrastructure overrides
+docker-compose.override.yml
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local logs and temporary files
+*.log
+*.tmp
