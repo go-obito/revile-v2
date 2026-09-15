@@ -1,7 +1,24 @@
+import logging
 from functools import lru_cache
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
+
+
+def _redact_database_url(value: str) -> str:
+    scheme_separator = value.find("://")
+    authority_start = scheme_separator + 3 if scheme_separator >= 0 else 0
+    at_sign = value.find("@", authority_start)
+    if at_sign < 0:
+        return value
+
+    userinfo = value[authority_start:at_sign]
+    colon = userinfo.find(":")
+    if colon < 0:
+        return value
+    return f"{value[:authority_start]}{userinfo[:colon]}:***{value[at_sign:]}"
 
 
 class Settings(BaseSettings):
@@ -29,6 +46,9 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:
+        raw_value = str(value)
+        logger.debug("Raw DATABASE_URL before normalization: %r", _redact_database_url(raw_value))
+        value = raw_value.strip()
         if value.startswith("postgres://"):
             return value.replace("postgres://", "postgresql+asyncpg://", 1)
         if value.startswith("postgresql://"):

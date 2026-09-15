@@ -18,6 +18,10 @@ from app.config import Settings
             "postgresql+asyncpg://revile:revile@localhost:5432/revile",
             "postgresql+asyncpg://revile:revile@localhost:5432/revile",
         ),
+        (
+            "  postgresql://revile:revile@localhost:5432/revile\n",
+            "postgresql+asyncpg://revile:revile@localhost:5432/revile",
+        ),
     ],
 )
 def test_database_url_is_normalized_for_async_sqlalchemy(database_url: str, expected_url: str) -> None:
