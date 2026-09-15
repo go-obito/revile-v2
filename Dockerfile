@@ -7,6 +7,7 @@ COPY pyproject.toml uv.lock ./
 RUN pip install --no-cache-dir uv && uv sync --frozen --no-dev
 
 COPY app ./app
+COPY scripts ./scripts
 COPY alembic ./alembic
 COPY alembic.ini main.py ./
 RUN mkdir -p public
