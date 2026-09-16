@@ -73,6 +73,16 @@ h3 { font-size: 1.45rem; line-height: 1.02; margin: 13px 0 8px; }
 .article-byline { padding: 19px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 .article-body { max-width: 680px; margin: 60px auto 0; font-family: Georgia, serif; font-size: 1.2rem; line-height: 1.78; }
 .article-body p { margin: 0 0 1.4em; }
+.article-body h1, .article-body h2, .article-body h3, .article-body h4 { margin: 1.5em 0 .6em; letter-spacing: -.04em; }
+.article-body ul, .article-body ol { padding-left: 1.5em; }
+.article-body blockquote { margin: 1.5em 0; border-left: 4px solid var(--red); padding-left: 1em; color: var(--muted); }
+.article-body code { padding: .12em .3em; background: #ebe7de; font-family: monospace; font-size: .82em; }
+.article-body pre { overflow-x: auto; margin: 1.5em 0; padding: 18px; background: var(--ink); color: var(--paper); line-height: 1.5; }
+.article-body pre code { padding: 0; background: transparent; color: inherit; font-size: .82em; }
+.article-body table { width: 100%; margin: 1.5em 0; border-collapse: collapse; font-family: "DM Sans", sans-serif; font-size: .82em; line-height: 1.4; }
+.article-body th, .article-body td { border: 1px solid var(--line); padding: 9px 10px; text-align: left; }
+.article-body th { background: #ebe7de; }
+.article-body img { display: block; max-width: 100%; height: auto; margin: 1.5em 0; }
 .comments-shell { width: min(680px, calc(100% - 48px)); margin: 40px auto 0; border-top: 5px solid var(--ink); padding-top: 26px; }
 .comments-shell h2 { font-size: 3rem; }
 .comment-form { margin-top: 28px; }
@@ -121,6 +131,19 @@ textarea { min-height: 135px; resize: vertical; }
 .dashboard-card h2 { font-size: 2rem; }
 .dashboard-card p { color: var(--muted); line-height: 1.45; }
 .editor-form { max-width: 760px; }
+.body-field { display: grid; gap: 10px; }
+.body-label { display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: .76rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.markdown-toolbar { display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid var(--line); border-bottom: 0; padding: 8px; background: #ebe7de; }
+.markdown-toolbar button { border: 1px solid var(--line); background: var(--white); color: var(--ink); padding: 7px 9px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; }
+.markdown-toolbar button:hover, .markdown-toolbar button:focus-visible { border-color: var(--red); color: var(--red); }
+.markdown-toolbar button:disabled { cursor: wait; opacity: .55; }
+.editor-workspace { display: grid; }
+.editor-workspace-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.markdown-preview { min-width: 0; border: 1px solid var(--line); background: var(--white); padding: 14px 20px; overflow-wrap: anywhere; }
+.markdown-preview .article-body { margin: 20px 0 0; max-width: none; }
+.preview-label { margin: 0; color: var(--red); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.editor-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .body-editor { min-height: 420px; font-family: monospace; line-height: 1.5; }
 .check-label { display: flex; align-items: center; gap: 10px; flex-direction: row; }
 .check-label input { width: auto; }

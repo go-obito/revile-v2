@@ -18,3 +18,10 @@ def test_content_is_sanitized() -> None:
     assert "script" not in sanitize_markdown("Hello <script>alert(1)</script>")
     assert "<img" not in sanitize_comment("<img src=x onerror=alert(1)>")
     assert "<script" not in render_markdown("[click](javascript:alert(1))")
+
+
+def test_markdown_rendering_supports_editor_blocks() -> None:
+    rendered = render_markdown("`inline`\n\n```python\nprint('ok')\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |")
+    assert "<code>inline</code>" in rendered
+    assert "<pre><code>" in rendered
+    assert "<table>" in rendered

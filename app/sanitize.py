@@ -1,9 +1,9 @@
 import bleach
 from markdown_it import MarkdownIt
 
-_ALLOWED_TAGS = ["p", "br", "strong", "em", "a", "ul", "ol", "li", "blockquote", "code", "pre", "h1", "h2", "h3", "h4"]
-_ALLOWED_ATTRIBUTES = {"a": ["href", "title", "rel"]}
-_markdown = MarkdownIt("commonmark", {"html": False, "linkify": True})
+_ALLOWED_TAGS = ["p", "br", "strong", "em", "a", "ul", "ol", "li", "blockquote", "code", "pre", "h1", "h2", "h3", "h4", "table", "thead", "tbody", "tr", "th", "td", "img"]
+_ALLOWED_ATTRIBUTES = {"a": ["href", "title", "rel"], "img": ["src", "alt", "title"]}
+_markdown = MarkdownIt("commonmark", {"html": False, "linkify": True}).enable("table")
 
 
 def sanitize_markdown(value: str) -> str:

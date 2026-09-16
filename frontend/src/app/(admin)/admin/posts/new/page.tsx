@@ -8,13 +8,13 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
 export default function NewPostPage() {
-  const { accessToken } = useAuth();
+  const { accessToken, hasRole } = useAuth();
   const router = useRouter();
   const [error, setError] = useState("");
-  async function submit(values: PostFormValues) {
+  async function submit(values: PostFormValues, publish: boolean) {
     if (!accessToken) return;
     setError("");
-    try { await api.createPost({ ...values, dek: values.dek || null }, accessToken); router.push("/admin/posts"); } catch (submitError) { setError(submitError instanceof Error ? submitError.message : "Unable to save post."); }
+    try { const post = await api.createPost({ ...values, dek: values.dek || null }, accessToken); if (publish) await api.publishPost(post.id, accessToken); router.push("/admin/posts"); } catch (submitError) { setError(submitError instanceof Error ? submitError.message : "Unable to save post."); }
   }
-  return <main className="admin-content narrow-content"><p className="eyebrow">New dispatch</p><h1>Write the story.</h1><PostForm onSubmit={submit} submitLabel="Save draft" submittingLabel="Saving..." error={error} /></main>;
+  return <main className="admin-content narrow-content"><p className="eyebrow">New dispatch</p><h1>Write the story.</h1><PostForm onSubmit={submit} canPublish={hasRole("admin", "editor")} submitLabel="Save draft" submittingLabel="Saving..." error={error} /></main>;
 }
