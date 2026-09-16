@@ -42,6 +42,7 @@ h3 { font-size: 1.45rem; line-height: 1.02; margin: 13px 0 8px; }
 .breaking-grid .post-card:first-child { padding-left: 0; }
 .breaking-grid .post-card:last-child { border-right: 0; }
 .post-card-meta, .article-meta { display: flex; gap: 15px; color: var(--muted); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.post-card-index { color: var(--red); }
 .post-card-meta span, .article-meta span { color: var(--red); }
 .post-card p { color: var(--muted); line-height: 1.45; margin: 0; }
 .latest-section { padding: 84px 0; }
