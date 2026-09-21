@@ -57,14 +57,18 @@ The first admin is created by `uv run python -m scripts.seed` using `ADMIN_EMAIL
 
 Public reads: `/api/v1/posts`, `/api/v1/posts/{slug}`, `/api/v1/posts/breaking`, `/api/v1/categories`, `/api/v1/categories/{slug}/posts`, and `/api/v1/search`.
 
-Editorial and authenticated operations cover post creation/editing, publish/schedule/unpublish, breaking flags, moderation, users, and ImageKit upload authentication. Anonymous comments are accepted as pending and rate-limited per IP.
+Editorial and authenticated operations cover post creation/editing, publish/schedule/unpublish, breaking flags, moderation, users, and ImageKit upload authentication. Anonymous comments go straight to moderation, receive an optional Akismet score, are idempotent per client UUID, and are rate-limited by Railway's `X-Real-IP` header. Editors can review flags/reports and an immutable moderation audit trail.
+
+## Comment security configuration
+
+Before enabling public comments in production, set `AKISMET_API_KEY` and `AKISMET_BLOG_URL` when spam scoring is desired. The API uses Railway's `X-Real-IP` header for comment rate limiting and falls back to the direct peer address when the header is absent.
 
 ## Railway deployment
 
 1. Create a Railway project and add a PostgreSQL service and Redis service.
 2. Deploy this repository; Railway uses `railway.json` and the Dockerfile.
 3. Set `DATABASE_URL` and `REDIS_URL` from the Railway service references.
-4. Set `JWT_SECRET`, `FRONTEND_ORIGIN`, `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT`, and admin seed variables in Railway Variables. Use a generated secret for `JWT_SECRET` and never commit it.
+4. Set `JWT_SECRET`, `FRONTEND_ORIGIN`, `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT`, comment-security variables above, and admin seed variables in Railway Variables. Use a generated secret for `JWT_SECRET` and never commit it.
 5. Railway runs `alembic upgrade head` before Uvicorn and checks `/healthz`.
 
 For production, set `COOKIE_SECURE=true`, use HTTPS, and restrict the frontend origin to the real site. Add `NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY` and `NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT` to the frontend Railway service; never expose `IMAGEKIT_PRIVATE_KEY` there.

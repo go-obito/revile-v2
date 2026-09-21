@@ -1,6 +1,6 @@
 export type Role = "admin" | "editor" | "author" | "reader";
 export type PostStatus = "draft" | "scheduled" | "published" | "archived";
-export type CommentStatus = "pending" | "approved" | "spam" | "rejected";
+export type CommentStatus = "pending" | "flagged" | "approved" | "spam" | "rejected";
 
 export interface UserRead {
   id: number;
@@ -63,6 +63,30 @@ export interface ImageKitAuthResponse {
   signature: string;
 }
 
+export interface ModerationCommentRead extends CommentRead {
+  spam_score: number | null;
+  spam_reason: string | null;
+}
+
+export interface CommentReportRead {
+  id: number;
+  comment_id: number;
+  reason: string;
+  reported_at: string;
+}
+
+export interface ReportedCommentRead extends ModerationCommentRead {
+  reports: CommentReportRead[];
+}
+
+export interface CommentAuditRead {
+  id: number;
+  comment_id: number;
+  actor_id: number;
+  action: string;
+  created_at: string;
+}
+
 export interface MediaRead {
   id: number;
   file_url: string;
@@ -96,6 +120,7 @@ export interface CommentCreate {
   author_email: string;
   body: string;
   parent_id?: number | null;
+  idempotency_key: string;
 }
 
 export interface ApiErrorPayload {

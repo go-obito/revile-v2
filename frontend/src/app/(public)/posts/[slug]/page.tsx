@@ -30,7 +30,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     <section className="comments-shell">
       <p className="eyebrow">Community record</p>
       <h2>Comments</h2>
-      <CommentThread comments={comments} />
+      <CommentThread comments={comments} postId={post.id} />
       <div className="comment-compose">
         <p className="eyebrow">Have a view?</p>
         <h3>Join the record.</h3>

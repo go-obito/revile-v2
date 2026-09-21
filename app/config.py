@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     access_token_minutes: int = 15
     refresh_token_days: int = 30
     frontend_origin: str = "http://localhost:3000"
+    akismet_api_key: str = ""
+    akismet_blog_url: str = ""
     imagekit_public_key: str = ""
     imagekit_private_key: str = ""
     imagekit_url_endpoint: str = ""

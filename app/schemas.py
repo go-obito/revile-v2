@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -96,6 +97,7 @@ class CommentCreate(BaseModel):
     author_email: EmailStr
     body: str = Field(min_length=1, max_length=5000)
     parent_id: int | None = None
+    idempotency_key: UUID
 
     @field_validator("body")
     @classmethod
@@ -114,8 +116,50 @@ class CommentRead(BaseModel):
     created_at: datetime
 
 
+class ModerationCommentRead(CommentRead):
+    spam_score: float | None = None
+    spam_reason: str | None = None
+
+
+class CommentReportCreate(BaseModel):
+    reason: str = Field(min_length=3, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def clean_reason(cls, value: str) -> str:
+        return sanitize_comment(value)
+
+
+class CommentReportRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    comment_id: int
+    reason: str
+    reported_at: datetime
+
+
+class ReportedCommentRead(ModerationCommentRead):
+    reports: list[CommentReportRead]
+
+
+class CommentAuditRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    comment_id: int
+    actor_id: int
+    action: str
+    created_at: datetime
+
+
 class ModerationUpdate(BaseModel):
     status: CommentStatus
+
+    @field_validator("status")
+    @classmethod
+    def allow_only_moderation_outcomes(cls, value: CommentStatus) -> CommentStatus:
+        if value not in {CommentStatus.APPROVED, CommentStatus.REJECTED, CommentStatus.SPAM, CommentStatus.FLAGGED}:
+            raise ValueError("Status is not a moderation outcome")
+        return value
 
 
 class CategoryCreate(BaseModel):

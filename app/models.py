@@ -6,6 +6,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -39,6 +40,7 @@ class PostStatus(StrEnum):
 
 class CommentStatus(StrEnum):
     PENDING = "pending"
+    FLAGGED = "flagged"
     APPROVED = "approved"
     SPAM = "spam"
     REJECTED = "rejected"
@@ -77,6 +79,7 @@ class User(Base):
     posts: Mapped[list["Post"]] = relationship(foreign_keys="Post.author_id", back_populates="author")
     revisions: Mapped[list["PostRevision"]] = relationship(back_populates="editor")
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    moderation_audits: Mapped[list["CommentModerationAudit"]] = relationship(back_populates="actor")
 
 
 class RefreshToken(Base):
@@ -165,7 +168,10 @@ class Tag(Base):
 
 class Comment(Base):
     __tablename__ = "comments"
-    __table_args__ = (Index("ix_comments_post_status", "post_id", "status", "created_at"),)
+    __table_args__ = (
+        Index("ix_comments_post_status", "post_id", "status", "created_at"),
+        Index("ix_comments_idempotency_key", "idempotency_key", unique=True),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), index=True)
@@ -173,12 +179,41 @@ class Comment(Base):
     author_name: Mapped[str] = mapped_column(String(120))
     author_email: Mapped[str] = mapped_column(String(320))
     body: Mapped[str] = mapped_column(Text)
+    idempotency_key: Mapped[str] = mapped_column(String(36), unique=True)
+    spam_score: Mapped[float | None] = mapped_column(Float)
+    spam_reason: Mapped[str | None] = mapped_column(Text)
     status: Mapped[CommentStatus] = mapped_column(SqlEnum(CommentStatus, name="commentstatus", values_callable=enum_values), default=CommentStatus.PENDING, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     post: Mapped[Post] = relationship(back_populates="comments")
     parent: Mapped["Comment | None"] = relationship(remote_side=[id], back_populates="children")
     children: Mapped[list["Comment"]] = relationship(back_populates="parent", cascade="all, delete-orphan")
+    reports: Mapped[list["CommentReport"]] = relationship(back_populates="comment", cascade="all, delete-orphan")
+    moderation_audits: Mapped[list["CommentModerationAudit"]] = relationship(back_populates="comment", cascade="all, delete-orphan")
+
+
+class CommentReport(Base):
+    __tablename__ = "comment_reports"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id", ondelete="CASCADE"), index=True)
+    reason: Mapped[str] = mapped_column(String(500))
+    reported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    comment: Mapped[Comment] = relationship(back_populates="reports")
+
+
+class CommentModerationAudit(Base):
+    __tablename__ = "comment_moderation_audits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id", ondelete="CASCADE"), index=True)
+    actor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    action: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    comment: Mapped[Comment] = relationship(back_populates="moderation_audits")
+    actor: Mapped[User] = relationship(back_populates="moderation_audits")
 
 
 class Media(Base):

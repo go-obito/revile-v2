@@ -3,7 +3,10 @@ import type {
   ApiRequestOptions,
   CategoryRead,
   CommentCreate,
+  CommentAuditRead,
   CommentRead,
+  ModerationCommentRead,
+  ReportedCommentRead,
   CommentStatus,
   ImageKitAuthResponse,
   MediaRead,
@@ -111,6 +114,9 @@ export const api = {
   createComment(postId: number, payload: CommentCreate) {
     return request<CommentRead>(`/posts/${postId}/comments`, { method: "POST", body: JSON.stringify(payload) });
   },
+  reportComment(commentId: number, reason: string) {
+    return request<{ reported: boolean }>(`/comments/${commentId}/reports`, { method: "POST", body: JSON.stringify({ reason }) });
+  },
   getApprovedComments(postId: number) {
     return request<CommentRead[]>(`/posts/${postId}/comments`);
   },
@@ -133,7 +139,16 @@ export const api = {
     return request<PostRead>(`/posts/${postId}/flag-breaking`, { method: "POST", accessToken });
   },
   getPendingComments(accessToken: string) {
-    return request<CommentRead[]>("/admin/comments/pending", { accessToken });
+    return request<ModerationCommentRead[]>("/admin/comments/pending", { accessToken });
+  },
+  getPendingCommentCount(accessToken: string) {
+    return request<{ count: number }>("/admin/comments/pending-count", { accessToken });
+  },
+  getReportedComments(accessToken: string) {
+    return request<ReportedCommentRead[]>("/admin/comments/reported", { accessToken });
+  },
+  getModerationHistory(accessToken: string) {
+    return request<CommentAuditRead[]>("/admin/comments/history", { accessToken });
   },
   moderateComment(commentId: number, status: CommentStatus, accessToken: string) {
     return request<CommentRead>(`/admin/comments/${commentId}/moderate`, { method: "PATCH", body: JSON.stringify({ status }), accessToken });
