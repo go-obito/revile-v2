@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.cache import cache_get, cache_set, invalidate_post
 from app.db import get_db
+from app.media_services import link_media_to_post
 from app.models import Category, Post, PostRevision, PostStatus, Tag, User, UserRole
 from app.schemas import PostCreate, PostList, PostRead, PostUpdate
 from app.security import get_current_user, require_roles
@@ -115,6 +116,8 @@ async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), u
     post = Post(title=payload.title, slug=payload.slug, dek=payload.dek, body=payload.body, is_breaking=payload.is_breaking, author_id=user.id)
     await set_taxonomy(post, payload.category_ids, payload.tag_ids, db)
     db.add(post)
+    await db.flush()
+    await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
     await db.commit()
     await db.refresh(post, attribute_names=["author", "categories", "tags"])
     return post
@@ -136,6 +139,7 @@ async def update_post(post_id: int, payload: PostUpdate, db: AsyncSession = Depe
     if payload.category_ids is not None or payload.tag_ids is not None:
         await set_taxonomy(post, payload.category_ids or [], payload.tag_ids or [], db)
     post.editor_id = user.id
+    await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
     await db.commit()
     await db.refresh(post, attribute_names=["author", "categories", "tags"])
     await invalidate_post(post.id, old_slug)
