@@ -16,5 +16,5 @@ export default function NewPostPage() {
     setError("");
     try { const post = await api.createPost({ ...values, dek: values.dek || null }, accessToken); if (publish) await api.publishPost(post.id, accessToken); router.push("/admin/posts"); } catch (submitError) { setError(submitError instanceof Error ? submitError.message : "Unable to save post."); }
   }
-  return <main className="admin-content narrow-content"><p className="eyebrow">New dispatch</p><h1>Write the story.</h1><PostForm onSubmit={submit} canPublish={hasRole("admin", "editor")} submitLabel="Save draft" submittingLabel="Saving..." error={error} /></main>;
+  return <main className="admin-content narrow-content"><h1>Write the story.</h1><PostForm onSubmit={submit} canPublish={hasRole("admin", "editor")} submitLabel="Save draft" submittingLabel="Saving..." error={error} /></main>;
 }

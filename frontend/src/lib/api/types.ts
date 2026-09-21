@@ -41,8 +41,8 @@ export interface PostRead {
   published_at: string | null;
   updated_at: string;
   created_at: string;
-  categories: CategoryRead[];
-  tags: TagRead[];
+  categories?: CategoryRead[];
+  tags?: TagRead[];
 }
 
 export interface PostList {

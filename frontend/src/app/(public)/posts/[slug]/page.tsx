@@ -22,7 +22,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const comments = await api.getApprovedComments(post.id).catch(() => []);
   const publishedAt = post.published_at ?? post.created_at;
   const readingMinutes = Math.max(1, Math.ceil(post.body.replace(/[#*_>`~\-()[\]]/g, " ").trim().split(/\s+/).filter(Boolean).length / 220));
-  const category = post.categories[0];
+  const category = post.categories?.[0];
   return <main className="article-page">
     <article className="article-shell">
       <div className="article-meta"><Link href={category ? `/categories/${category.slug}` : "/"}>{category?.name ?? (post.is_breaking ? "Breaking" : "Dispatch")}</Link><time dateTime={publishedAt}>{new Date(publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</time><span>{readingMinutes} min read</span></div>
@@ -31,8 +31,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <div className="article-byline"><span>By <strong>{post.author_name ?? "Revile newsroom"}</strong></span><span>Updated {new Date(post.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span><ArticleActions title={post.title} /></div>
       {post.featured_image_url && <figure className="article-hero"><img src={post.featured_image_url} alt={post.featured_image_alt} /><figcaption>{post.featured_image_alt}</figcaption></figure>}
       <MarkdownContent source={post.body} className="article-body" />
-      <aside className="article-newsletter"><p className="eyebrow">The Revile briefing</p><h2>Get the next essential read.</h2><NewsletterForm compact /></aside>
+      <aside className="article-newsletter"><h2>Get the next essential read.</h2><NewsletterForm compact /></aside>
     </article>
-    <section className="comments-shell"><p className="eyebrow">Community record</p><h2>Comments</h2><CommentThread comments={comments} postId={post.id} /><div className="comment-compose"><p className="eyebrow">Have a view?</p><h3>Join the record.</h3><p className="muted">Comments are reviewed before appearing publicly.</p><CommentForm postId={post.id} /></div></section>
+    <section className="comments-shell"><h2>Comments</h2><CommentThread comments={comments} postId={post.id} /><div className="comment-compose"><h3>Join the record.</h3><p className="muted">Comments are reviewed before appearing publicly.</p><CommentForm postId={post.id} /></div></section>
   </main>;
 }
