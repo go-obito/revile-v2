@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     imagekit_public_key: str = ""
     imagekit_private_key: str = ""
     imagekit_url_endpoint: str = ""
+    resend_api_key: str = ""
+    resend_audience_id: str = ""
+    newsletter_from_email: str = ""
+    newsletter_confirmation_hours: int = Field(default=48, ge=1, le=168)
     cookie_secure: bool = False
     log_level: str = "INFO"
     public_dir: str = "public"

@@ -39,7 +39,6 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentNode; depth?: num
 
 export function CommentThread({ comments: initialComments, postId }: { comments: CommentRead[]; postId: number }) {
   const [comments, setComments] = useState(initialComments);
-  useEffect(() => { setComments(initialComments); }, [initialComments]);
   useEffect(() => {
     let active = true;
     const refresh = () => api.getApprovedComments(postId).then((next) => { if (active) setComments(next); }).catch(() => undefined);

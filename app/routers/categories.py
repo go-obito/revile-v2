@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db import get_db
 from app.models import Category, Post, PostStatus, Tag, User, UserRole
@@ -30,7 +31,7 @@ async def category_posts(slug: str, limit: int = 20, db: AsyncSession = Depends(
     category = await db.scalar(select(Category).where(Category.slug == slug))
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    posts = list((await db.scalars(select(Post).join(Post.categories).where(Category.id == category.id, Post.status == PostStatus.PUBLISHED).order_by(Post.published_at.desc(), Post.id.desc()).limit(limit))).unique().all())
+    posts = list((await db.scalars(select(Post).options(selectinload(Post.author), selectinload(Post.categories), selectinload(Post.tags)).join(Post.categories).where(Category.id == category.id, Post.status == PostStatus.PUBLISHED).order_by(Post.published_at.desc(), Post.id.desc()).limit(limit))).unique().all())
     return PostList(items=posts, next_cursor=encode_cursor(posts[-1]) if len(posts) == limit else None)
 
 

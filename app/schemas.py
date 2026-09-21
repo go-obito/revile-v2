@@ -69,6 +69,17 @@ class PostUpdate(BaseModel):
         return sanitize_markdown(value) if value is not None else None
 
 
+class CategoryRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    slug: str
+
+
+class TagRead(CategoryRead):
+    pass
+
+
 class PostRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -77,6 +88,7 @@ class PostRead(BaseModel):
     dek: str | None
     body: str
     featured_image_url: str | None = None
+    featured_image_alt: str = ""
     status: PostStatus
     is_breaking: bool
     author_id: int
@@ -114,6 +126,8 @@ class CommentRead(BaseModel):
     body: str
     status: CommentStatus
     created_at: datetime
+    categories: list[CategoryRead] = Field(default_factory=list)
+    tags: list[TagRead] = Field(default_factory=list)
 
 
 class ModerationCommentRead(CommentRead):
@@ -167,15 +181,12 @@ class CategoryCreate(BaseModel):
     slug: str = Field(min_length=1, max_length=120)
 
 
-class CategoryRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: int
-    name: str
-    slug: str
-
-
 class TagCreate(CategoryCreate):
     pass
+
+
+class NewsletterSubscribe(BaseModel):
+    email: EmailStr
 
 
 class ImageKitAuthResponse(BaseModel):

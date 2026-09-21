@@ -10,6 +10,7 @@ import type {
   CommentStatus,
   ImageKitAuthResponse,
   MediaRead,
+  NewsletterSubscriptionResponse,
   PostCreate,
   PostList,
   PostRead,
@@ -110,6 +111,9 @@ export const api = {
   },
   searchPosts(term: string) {
     return request<PostRead[]>(`/search${query({ q: term })}`, { next: { revalidate: 15 } });
+  },
+  subscribeNewsletter(email: string) {
+    return request<NewsletterSubscriptionResponse>("/newsletter/subscriptions", { method: "POST", body: JSON.stringify({ email }) });
   },
   createComment(postId: number, payload: CommentCreate) {
     return request<CommentRead>(`/posts/${postId}/comments`, { method: "POST", body: JSON.stringify(payload) });

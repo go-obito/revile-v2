@@ -63,6 +63,10 @@ Editorial and authenticated operations cover post creation/editing, publish/sche
 
 Before enabling public comments in production, set `AKISMET_API_KEY` and `AKISMET_BLOG_URL` when spam scoring is desired. The API uses Railway's `X-Real-IP` header for comment rate limiting and falls back to the direct peer address when the header is absent.
 
+## Newsletter configuration
+
+Revile uses a double-opt-in newsletter flow backed by a Resend Audience. Set `RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, and `NEWSLETTER_FROM_EMAIL` to a verified Resend sender. The confirmation link is built from `FRONTEND_ORIGIN`; subscribers are only added to the Resend audience after confirmation. `NEWSLETTER_CONFIRMATION_HOURS` defaults to 48.
+
 ## Railway deployment
 
 1. Create a Railway project and add a PostgreSQL service and Redis service.

@@ -32,6 +32,7 @@ export interface PostRead {
   dek: string | null;
   body: string;
   featured_image_url: string | null;
+  featured_image_alt: string;
   status: PostStatus;
   is_breaking: boolean;
   author_id: number;
@@ -40,6 +41,8 @@ export interface PostRead {
   published_at: string | null;
   updated_at: string;
   created_at: string;
+  categories: CategoryRead[];
+  tags: TagRead[];
 }
 
 export interface PostList {
@@ -121,6 +124,10 @@ export interface CommentCreate {
   body: string;
   parent_id?: number | null;
   idempotency_key: string;
+}
+
+export interface NewsletterSubscriptionResponse {
+  message: string;
 }
 
 export interface ApiErrorPayload {

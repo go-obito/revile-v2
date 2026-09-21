@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Bold, Code2, ImagePlus, Italic, Link2, List, ListOrdered, Quote, Redo2, RemoveFormatting, Strikethrough, TableProperties, Underline, Undo2 } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -13,11 +13,11 @@ import TableCell from "@tiptap/extension-table-cell";
 import UnderlineExtension from "@tiptap/extension-underline";
 import { Markdown } from "@tiptap/markdown";
 import { upload } from "@imagekit/javascript";
-import { api } from "@/lib/api";
+import { api, type CategoryRead, type TagRead } from "@/lib/api";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
-export interface PostFormValues { title: string; slug: string; dek: string; body: string; is_breaking: boolean; }
+export interface PostFormValues { title: string; slug: string; dek: string; body: string; is_breaking: boolean; category_ids: number[]; tag_ids: number[]; }
 
 interface PostFormProps { initialValues?: Partial<PostFormValues>; submitLabel: string; submittingLabel: string; onSubmit: (values: PostFormValues, publish: boolean) => Promise<void>; canPublish: boolean; postId?: number; error?: string; success?: string; }
 interface ToolButtonProps { active?: boolean; disabled?: boolean; label: string; onClick: () => void; children: ReactNode; }
@@ -28,7 +28,9 @@ function ToolButton({ active = false, disabled = false, label, onClick, children
 
 export function PostForm({ initialValues, submitLabel, submittingLabel, onSubmit, canPublish, postId, error, success }: PostFormProps) {
   const { accessToken } = useAuth();
-  const [form, setForm] = useState<PostFormValues>({ title: "", slug: "", dek: "", body: "", is_breaking: false, ...initialValues });
+  const [form, setForm] = useState<PostFormValues>({ title: "", slug: "", dek: "", body: "", is_breaking: false, category_ids: [], tag_ids: [], ...initialValues });
+  const [categories, setCategories] = useState<CategoryRead[]>([]);
+  const [tags, setTags] = useState<TagRead[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -43,7 +45,10 @@ export function PostForm({ initialValues, submitLabel, submittingLabel, onSubmit
     onUpdate: ({ editor: currentEditor }) => update("body", currentEditor.storage.markdown.manager.serialize(currentEditor.getJSON())),
   }, [initialValues?.body]);
 
-  function update(field: keyof PostFormValues, value: string | boolean) { setForm((current) => ({ ...current, [field]: value })); }
+  useEffect(() => { Promise.all([api.getCategories(), api.getTags()]).then(([nextCategories, nextTags]) => { setCategories(nextCategories); setTags(nextTags); }).catch(() => undefined); }, []);
+
+  function update(field: keyof PostFormValues, value: string | boolean | number[]) { setForm((current) => ({ ...current, [field]: value } as PostFormValues)); }
+  function toggleTaxonomy(field: "category_ids" | "tag_ids", id: number) { setForm((current) => ({ ...current, [field]: current[field].includes(id) ? current[field].filter((value) => value !== id) : [...current[field], id] })); }
   function insertLink() { const url = window.prompt("Link URL:"); if (url) editor?.chain().focus().setLink({ href: url }).run(); }
   function insertTable() { editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); }
 
@@ -76,6 +81,7 @@ export function PostForm({ initialValues, submitLabel, submittingLabel, onSubmit
     <label>Headline<input value={form.title} onChange={(event) => update("title", event.target.value)} required /></label>
     <label>Slug<input value={form.slug} onChange={(event) => update("slug", event.target.value)} required /></label>
     <label>Dek <span className="field-note">Optional</span><input value={form.dek} onChange={(event) => update("dek", event.target.value)} /></label>
+    <div className="taxonomy-fields"><fieldset><legend>Sections</legend><div className="taxonomy-options">{categories.map((category) => <label className="check-label" key={category.id}><input type="checkbox" checked={form.category_ids.includes(category.id)} onChange={() => toggleTaxonomy("category_ids", category.id)} />{category.name}</label>)}</div></fieldset><fieldset><legend>Tags</legend><div className="taxonomy-options">{tags.map((tag) => <label className="check-label" key={tag.id}><input type="checkbox" checked={form.tag_ids.includes(tag.id)} onChange={() => toggleTaxonomy("tag_ids", tag.id)} />{tag.name}</label>)}</div></fieldset></div>
     {uploading && <p className="field-note" role="status">Uploading image: {uploadProgress}%</p>}
     <div className="body-field">
       <div className="body-label"><span>Post body</span><button className="text-button" type="button" onClick={() => setPreviewOpen((current) => !current)}>{previewOpen ? "Hide preview" : "Show preview"}</button></div>

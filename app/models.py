@@ -14,6 +14,7 @@ from sqlalchemy import (
     Table,
     Text,
     func,
+    inspect,
 )
 from sqlalchemy import (
     Enum as SqlEnum,
@@ -132,6 +133,19 @@ class Post(Base):
         html_image = re.search(r'<img[^>]+src=["\'](https?://[^"\']+)["\']', self.body, re.IGNORECASE)
         return html_image.group(1) if html_image else None
 
+    @property
+    def featured_image_alt(self) -> str:
+        markdown_image = re.search(r"!\[([^\]]*)\]\(https?://[^\s)]+(?:\s+[^)]*)?\)", self.body)
+        if markdown_image:
+            return markdown_image.group(1)
+        html_image = re.search(r'<img[^>]+alt=["\']([^"\']*)["\']', self.body, re.IGNORECASE)
+        return html_image.group(1) if html_image else ""
+
+    @property
+    def author_name(self) -> str | None:
+        author = inspect(self).dict.get("author")
+        return author.name if author else None
+
 
 class PostRevision(Base):
     __tablename__ = "post_revisions"
@@ -228,3 +242,19 @@ class Media(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     post: Mapped[Post | None] = relationship(back_populates="media")
+
+
+class NewsletterSubscriber(Base):
+    __tablename__ = "newsletter_subscribers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    confirmation_token_hash: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
+    confirmation_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    unsubscribe_token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    resend_contact_id: Mapped[str | None] = mapped_column(String(255))
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

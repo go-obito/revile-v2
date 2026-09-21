@@ -6,7 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.jobs.scheduler import start_scheduler, stop_scheduler
 from app.logging import configure_logging
-from app.routers import auth, categories, comments, media, moderation, posts, search, users
+from app.routers import (
+    auth,
+    categories,
+    comments,
+    media,
+    moderation,
+    newsletter,
+    posts,
+    search,
+    users,
+)
 
 settings = get_settings()
 
@@ -42,5 +52,4 @@ app.include_router(search.router, prefix=settings.api_prefix)
 app.include_router(moderation.router, prefix=settings.api_prefix)
 app.include_router(users.router, prefix=settings.api_prefix)
 app.include_router(media.router, prefix=settings.api_prefix)
-
-
+app.include_router(newsletter.router, prefix=settings.api_prefix)

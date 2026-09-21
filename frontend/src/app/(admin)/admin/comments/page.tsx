@@ -17,7 +17,7 @@ export default function CommentsPage() {
       setComments(queue); setReports(reported); setHistory(audits);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to load comments."); }
   }, [accessToken]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timer = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timer); }, [load]);
   async function moderate(commentId: number, status: CommentStatus) {
     if (!accessToken) return;
     try { await api.moderateComment(commentId, status, accessToken); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to moderate comment."); }
