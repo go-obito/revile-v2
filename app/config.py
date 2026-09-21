@@ -35,10 +35,9 @@ class Settings(BaseSettings):
     access_token_minutes: int = 15
     refresh_token_days: int = 30
     frontend_origin: str = "http://localhost:3000"
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
-    aws_region: str = "us-east-1"
-    s3_bucket_name: str = ""
+    imagekit_public_key: str = ""
+    imagekit_private_key: str = ""
+    imagekit_url_endpoint: str = ""
     cookie_secure: bool = False
     log_level: str = "INFO"
     public_dir: str = "public"

@@ -8,7 +8,7 @@ Production-oriented FastAPI backend for a news-first technology publication.
 - PostgreSQL with SQLAlchemy 2 async and Alembic
 - Redis caching and IP rate limiting
 - JWT access tokens plus rotated, hashed httpOnly refresh cookies
-- AWS S3 presigned uploads
+- ImageKit direct uploads with server-generated client authentication
 - APScheduler for scheduled publishing, sitemap, and RSS generation
 
 ## Local setup
@@ -57,17 +57,17 @@ The first admin is created by `uv run python -m scripts.seed` using `ADMIN_EMAIL
 
 Public reads: `/api/v1/posts`, `/api/v1/posts/{slug}`, `/api/v1/posts/breaking`, `/api/v1/categories`, `/api/v1/categories/{slug}/posts`, and `/api/v1/search`.
 
-Editorial and authenticated operations cover post creation/editing, publish/schedule/unpublish, breaking flags, moderation, users, and S3 upload URLs. Anonymous comments are accepted as pending and rate-limited per IP.
+Editorial and authenticated operations cover post creation/editing, publish/schedule/unpublish, breaking flags, moderation, users, and ImageKit upload authentication. Anonymous comments are accepted as pending and rate-limited per IP.
 
 ## Railway deployment
 
 1. Create a Railway project and add a PostgreSQL service and Redis service.
 2. Deploy this repository; Railway uses `railway.json` and the Dockerfile.
 3. Set `DATABASE_URL` and `REDIS_URL` from the Railway service references.
-4. Set `JWT_SECRET`, `FRONTEND_ORIGIN`, `S3_BUCKET_NAME`, AWS credentials, and admin seed variables in Railway Variables. Use a generated secret for `JWT_SECRET` and never commit it.
+4. Set `JWT_SECRET`, `FRONTEND_ORIGIN`, `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT`, and admin seed variables in Railway Variables. Use a generated secret for `JWT_SECRET` and never commit it.
 5. Railway runs `alembic upgrade head` before Uvicorn and checks `/healthz`.
 
-For production, set `COOKIE_SECURE=true`, use HTTPS, restrict the frontend origin to the real site, and configure an S3 bucket policy appropriate for presigned uploads.
+For production, set `COOKIE_SECURE=true`, use HTTPS, and restrict the frontend origin to the real site. Add `NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY` and `NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT` to the frontend Railway service; never expose `IMAGEKIT_PRIVATE_KEY` there.
 
 ## Tests and checks
 

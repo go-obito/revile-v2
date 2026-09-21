@@ -5,12 +5,12 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="wordmark" href="/">
-          REVILE<span>.</span>
+          REVILE<span></span>
         </Link>
         <nav className="main-nav" aria-label="Main navigation">
           <Link href="/">Latest</Link>
           <Link href="/search">Search</Link>
-          <Link className="nav-admin" href="/admin">Desk login</Link>
+          <Link className="nav-admin" href="/admin">Desk</Link>
         </nav>
       </div>
       <div className="ticker" aria-label="Breaking news">

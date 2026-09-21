@@ -75,6 +75,7 @@ class PostRead(BaseModel):
     slug: str
     dek: str | None
     body: str
+    featured_image_url: str | None = None
     status: PostStatus
     is_breaking: bool
     author_id: int
@@ -133,17 +134,26 @@ class TagCreate(CategoryCreate):
     pass
 
 
-class MediaUploadRequest(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
-    content_type: str = Field(pattern=r"^[\w.-]+/[\w.+-]+$")
+class ImageKitAuthResponse(BaseModel):
+    token: str
+    expire: int
+    signature: str
+
+
+class MediaCreate(BaseModel):
+    file_url: str = Field(min_length=1, max_length=1000)
+    imagekit_file_id: str = Field(min_length=1, max_length=255)
     alt_text: str = Field(min_length=1, max_length=300)
     post_id: int | None = None
 
 
-class MediaUploadResponse(BaseModel):
-    upload_url: str
-    media_url: str
-    media_id: int
+class MediaRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    file_url: str
+    imagekit_file_id: str
+    alt_text: str
+    post_id: int | None
 
 
 class CursorPage(BaseModel):

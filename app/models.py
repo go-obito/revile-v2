@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from enum import StrEnum
 
@@ -120,6 +121,14 @@ class Post(Base):
     comments: Mapped[list["Comment"]] = relationship(back_populates="post", cascade="all, delete-orphan")
     media: Mapped[list["Media"]] = relationship(back_populates="post")
 
+    @property
+    def featured_image_url(self) -> str | None:
+        markdown_image = re.search(r"!\[[^\]]*\]\((https?://[^\s)]+)(?:\s+[^)]*)?\)", self.body)
+        if markdown_image:
+            return markdown_image.group(1)
+        html_image = re.search(r'<img[^>]+src=["\'](https?://[^"\']+)["\']', self.body, re.IGNORECASE)
+        return html_image.group(1) if html_image else None
+
 
 class PostRevision(Base):
     __tablename__ = "post_revisions"
@@ -176,7 +185,8 @@ class Media(Base):
     __tablename__ = "media"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    s3_url: Mapped[str] = mapped_column(String(1000))
+    file_url: Mapped[str] = mapped_column(String(1000))
+    imagekit_file_id: Mapped[str | None] = mapped_column(String(255))
     alt_text: Mapped[str] = mapped_column(String(300))
     uploaded_by: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     post_id: Mapped[int | None] = mapped_column(ForeignKey("posts.id", ondelete="SET NULL"), index=True)

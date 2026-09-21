@@ -7,7 +7,7 @@ _markdown = MarkdownIt("commonmark", {"html": False, "linkify": True}).enable("t
 
 
 def sanitize_markdown(value: str) -> str:
-    return bleach.clean(value.strip(), tags=[], attributes={}, strip=True)
+    return bleach.clean(value.strip(), tags=[], attributes={}, strip=True).replace("&gt;", ">")
 
 
 def render_markdown(value: str) -> str:

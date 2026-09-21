@@ -31,6 +31,7 @@ export interface PostRead {
   slug: string;
   dek: string | null;
   body: string;
+  featured_image_url: string | null;
   status: PostStatus;
   is_breaking: boolean;
   author_id: number;
@@ -56,10 +57,18 @@ export interface CommentRead {
   created_at: string;
 }
 
-export interface MediaUploadResponse {
-  upload_url: string;
-  media_url: string;
-  media_id: number;
+export interface ImageKitAuthResponse {
+  token: string;
+  expire: number;
+  signature: string;
+}
+
+export interface MediaRead {
+  id: number;
+  file_url: string;
+  imagekit_file_id: string;
+  alt_text: string;
+  post_id: number | null;
 }
 
 export interface PostCreate {

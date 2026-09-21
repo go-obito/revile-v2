@@ -5,7 +5,8 @@ import type {
   CommentCreate,
   CommentRead,
   CommentStatus,
-  MediaUploadResponse,
+  ImageKitAuthResponse,
+  MediaRead,
   PostCreate,
   PostList,
   PostRead,
@@ -110,6 +111,9 @@ export const api = {
   createComment(postId: number, payload: CommentCreate) {
     return request<CommentRead>(`/posts/${postId}/comments`, { method: "POST", body: JSON.stringify(payload) });
   },
+  getApprovedComments(postId: number) {
+    return request<CommentRead[]>(`/posts/${postId}/comments`);
+  },
   createPost(payload: PostCreate, accessToken: string) {
     return request<PostRead>("/posts", { method: "POST", body: JSON.stringify(payload), accessToken });
   },
@@ -140,7 +144,10 @@ export const api = {
   updateUserRole(userId: number, role: Role, accessToken: string) {
     return request<UserRead>(`/users/${userId}/role`, { method: "PATCH", body: JSON.stringify({ role }), accessToken });
   },
-  requestUpload(payload: { filename: string; content_type: string; alt_text: string; post_id?: number }, accessToken: string) {
-    return request<MediaUploadResponse>("/media/upload-url", { method: "POST", body: JSON.stringify(payload), accessToken });
+  getImageKitAuth(accessToken: string) {
+    return request<ImageKitAuthResponse>("/media/imagekit-auth", { accessToken });
+  },
+  createMediaRecord(payload: { file_url: string; imagekit_file_id: string; alt_text: string; post_id?: number }, accessToken: string) {
+    return request<MediaRead>("/media", { method: "POST", body: JSON.stringify(payload), accessToken });
   },
 };
