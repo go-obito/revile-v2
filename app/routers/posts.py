@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -113,12 +114,22 @@ async def get_post(slug: str, db: AsyncSession = Depends(get_db)) -> Post:
 
 @router.post("", response_model=PostRead, status_code=status.HTTP_201_CREATED)
 async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR))) -> Post:
+    existing = await db.scalar(select(Post.id).where(Post.slug == payload.slug))
+    if existing is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A post with this slug already exists")
+
     post = Post(title=payload.title, slug=payload.slug, dek=payload.dek, body=payload.body, is_breaking=payload.is_breaking, author_id=user.id)
     await set_taxonomy(post, payload.category_ids, payload.tag_ids, db)
     db.add(post)
-    await db.flush()
-    await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
-    await db.commit()
+    try:
+        await db.flush()
+        await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if "posts_slug_key" in str(exc.orig):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A post with this slug already exists") from exc
+        raise
     await db.refresh(post, attribute_names=["author", "categories", "tags"])
     return post
 
