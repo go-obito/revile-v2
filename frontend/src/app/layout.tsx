@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Inter, Roboto } from "next/font/google";
+import { DM_Sans, Lora } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import "./globals.css";
 
-const inter = Inter({
+const sans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const roboto = Roboto({
+const serif = Lora({
   subsets: ["latin"],
-  weight: ["400", "500", "700", "900"],
-  variable: "--font-roboto",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${roboto.variable}`}>
+    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body><AuthProvider>{children}</AuthProvider></body>
     </html>
   );
