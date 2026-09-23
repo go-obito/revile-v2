@@ -119,7 +119,7 @@ async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), u
     await db.flush()
     await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     return post
 
 
@@ -141,7 +141,7 @@ async def update_post(post_id: int, payload: PostUpdate, db: AsyncSession = Depe
     post.editor_id = user.id
     await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     await invalidate_post(post.id, old_slug)
     return post
 
@@ -155,7 +155,7 @@ async def publish_post(post_id: int, db: AsyncSession = Depends(get_db), user: U
     post.published_at = datetime.now(UTC)
     post.editor_id = user.id
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     await invalidate_post(post.id, post.slug)
     return post
 
@@ -169,7 +169,7 @@ async def schedule_post(post_id: int, published_at: datetime, db: AsyncSession =
         raise HTTPException(status_code=404, detail="Post not found")
     post.status, post.published_at, post.editor_id = PostStatus.SCHEDULED, published_at, user.id
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     return post
 
 
@@ -180,7 +180,7 @@ async def unpublish_post(post_id: int, db: AsyncSession = Depends(get_db), user:
         raise HTTPException(status_code=404, detail="Post not found")
     post.status, post.editor_id = PostStatus.DRAFT, user.id
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     await invalidate_post(post.id, post.slug)
     return post
 
@@ -192,6 +192,6 @@ async def flag_breaking(post_id: int, db: AsyncSession = Depends(get_db), _: Use
         raise HTTPException(status_code=404, detail="Post not found")
     post.is_breaking = True
     await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     await invalidate_post(post.id, post.slug)
     return post
