@@ -38,8 +38,9 @@ h3 { font-size:clamp(1.28rem,2.2vw,1.8rem); line-height:1.02; }
 .mobile-menu-button,.mobile-nav { display:none; }
 
 /* Public home */
-.lead-section { padding:35px 0 78px; }
-.lead-story { display:grid; grid-template-columns:minmax(0,1.06fr) minmax(320px,.94fr); gap:52px; padding-top:38px; align-items:end; }
+.lead-section { padding:35px 0 58px; }
+.lead-layout { display:grid; grid-template-columns:minmax(0,1.38fr) minmax(280px,.62fr); gap:42px; padding-top:30px; align-items:start; }
+.lead-story { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(250px,.98fr); gap:34px; align-items:end; }
 .lead-copy { padding:18px 0; }
 .lead-category { margin:0 0 10px; color:var(--signal); font-size:.69rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
 .lead-copy h1 a:hover { color:var(--signal); }
@@ -48,11 +49,18 @@ h3 { font-size:clamp(1.28rem,2.2vw,1.8rem); line-height:1.02; }
 .arrow-link { display:inline-flex; align-items:center; gap:9px; color:var(--ink); font-size:.74rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .arrow-link span { color:var(--signal); font-size:1.2rem; }
 .arrow-link:hover { color:var(--signal); }
-.lead-image,.lead-art { display:block; min-height:440px; overflow:hidden; background:linear-gradient(135deg,#d3d9df,#68758b); }
-.lead-image img { display:block; width:100%; height:100%; min-height:440px; object-fit:cover; transition:transform .45s ease; }
+.lead-image,.lead-art { display:block; min-height:340px; overflow:hidden; background:linear-gradient(135deg,#d3d9df,#68758b); }
+.lead-image img { display:block; width:100%; height:100%; min-height:340px; object-fit:cover; transition:transform .45s ease; }
 .lead-image:hover img { transform:scale(1.025); }
 .lead-art { display:grid; place-items:center; background:radial-gradient(circle at 34% 28%,#ed755d 0 10%,transparent 10.3%),linear-gradient(120deg,#172540,#33456a); }
 .lead-art span { color:#fff; font-family:var(--font-display); font-size:14rem; font-weight:900; }
+.lead-rail { border-top:2px solid var(--ink); }
+.lead-rail-heading { display:flex; justify-content:space-between; gap:15px; padding:13px 0 3px; color:var(--muted); font-size:.65rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+.lead-rail .post-card { grid-template-columns:112px minmax(0,1fr); min-height:0; padding:17px 0; gap:14px; }
+.lead-rail .post-card:first-of-type { border-top:1px solid var(--line); }
+.lead-rail .post-card-image,.lead-rail .post-card-placeholder,.lead-rail .post-card-image img { min-height:94px; }
+.lead-rail .post-card h3 { margin:6px 0 0; font-size:1.2rem; }
+.lead-rail .post-card p { display:none; }
 .breaking-section { padding:31px 0; color:#f7f7f2; background:var(--night); }
 .section-title { padding-top:14px; border-top:1px solid currentColor; font-size:clamp(1.7rem,3vw,2.5rem); }
 .breaking-section .section-title { color:#fff; border-color:#9ca9bc; }
@@ -278,10 +286,15 @@ label { display:grid; gap:7px; color:#2d3748; font-size:.69rem; font-weight:800;
   .mobile-nav a { padding:12px 0; border-bottom:1px solid var(--line); font-size:.78rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
   .ticker-inner { min-height:34px; font-size:.64rem; }
   .lead-section { padding:25px 0 52px; }
-  .lead-story { grid-template-columns:1fr; gap:25px; padding-top:24px; }
+  .lead-layout { grid-template-columns:1fr; gap:30px; padding-top:24px; }
+  .lead-story { grid-template-columns:1fr; gap:25px; padding-top:0; }
   .lead-copy { order:2; padding:0; }
   .lead-image,.lead-art,.lead-image img { min-height:260px; }
   .lead-footer { align-items:flex-start; flex-direction:column; gap:12px; }
+  .lead-rail { margin-top:2px; }
+  .lead-rail .post-card { display:block; min-height:0; padding:18px 0; border-bottom:1px solid var(--ink); }
+  .lead-rail .post-card-image,.lead-rail .post-card-placeholder { display:none; }
+  .lead-rail .post-card h3 { margin:7px 0 0; font-size:1.35rem; }
   .breaking-grid,.news-grid,.category-links,.dashboard-grid { grid-template-columns:1fr; }
   .breaking-grid .post-card { padding:17px 0; border-right:0; border-bottom:1px solid #53617b; }
   .breaking-grid .post-card:last-child { border-bottom:0; }
