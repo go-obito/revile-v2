@@ -121,14 +121,8 @@ async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), u
     post = Post(title=payload.title, slug=payload.slug, dek=payload.dek, body=payload.body, is_breaking=payload.is_breaking, author_id=user.id)
     await set_taxonomy(post, payload.category_ids, payload.tag_ids, db)
     db.add(post)
-<<<<<<< HEAD
     await db.flush()
-    await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
-    await db.commit()
-    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
-=======
     try:
-        await db.flush()
         await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
         await db.commit()
     except IntegrityError as exc:
@@ -136,8 +130,7 @@ async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), u
         if "posts_slug_key" in str(exc.orig):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A post with this slug already exists") from exc
         raise
-    await db.refresh(post, attribute_names=["author", "categories", "tags"])
->>>>>>> 5b4649e6f0aa8e6215d8efcc6203d1a3e6d8ed1e
+    await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
     return post
 
 
