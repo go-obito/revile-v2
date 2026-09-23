@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -64,7 +65,7 @@ async def list_posts(request: Request, cursor: str | None = None, limit: int = Q
 
 
 @router.get("/manage", response_model=PostList)
-async def list_manage_posts(cursor: str | None = None, limit: int = Query(20, ge=1, le=100), post_status: PostStatus | None = Query(default=None, alias="status"), db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR))) -> PostList:
+async def list_manage_posts(cursor: str | None = None, limit: int = Query(20, ge=1, le=100), post_status: PostStatus | None = Query(default=None, alias="status"), db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)) -> PostList:
     position = decode_cursor(cursor) if cursor else None
     query = select(Post).options(selectinload(Post.author), selectinload(Post.categories), selectinload(Post.tags))
     if user.role == UserRole.AUTHOR:
@@ -94,7 +95,7 @@ async def breaking_posts(db: AsyncSession = Depends(get_db)) -> list[Post]:
     cached = await cache_get("posts:breaking")
     if cached:
         return [PostRead.model_validate(item) for item in cached]
-    posts = list((await db.scalars(select(Post).options(selectinload(Post.author), selectinload(Post.categories), selectinload(Post.tags)).where(Post.status == PostStatus.PUBLISHED, Post.is_breaking.is_(True)).order_by(desc(Post.published_at)).limit(20))).all())
+    posts = list((await db.scalars(select(Post).options(selectinload(Post.author), selectinload(Post.categories), selectinload(Post.tags)).where(Post.status == PostStatus.PUBLISHED, Post.is_breaking.is_(True)).order_by(desc(Post.published_at), desc(Post.id)))).all())
     await cache_set("posts:breaking", [PostRead.model_validate(post).model_dump(mode="json") for post in posts], 60)
     return posts
 
@@ -113,19 +114,40 @@ async def get_post(slug: str, db: AsyncSession = Depends(get_db)) -> Post:
 
 @router.post("", response_model=PostRead, status_code=status.HTTP_201_CREATED)
 async def create_post(payload: PostCreate, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR))) -> Post:
+    existing = await db.scalar(select(Post.id).where(Post.slug == payload.slug))
+    if existing is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A post with this slug already exists")
+
     post = Post(title=payload.title, slug=payload.slug, dek=payload.dek, body=payload.body, is_breaking=payload.is_breaking, author_id=user.id)
     await set_taxonomy(post, payload.category_ids, payload.tag_ids, db)
     db.add(post)
+<<<<<<< HEAD
     await db.flush()
     await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
     await db.commit()
     await db.refresh(post, attribute_names=["author", "categories", "tags", "updated_at"])
+=======
+    try:
+        await db.flush()
+        await link_media_to_post(db, post_id=post.id, body=post.body, uploaded_by=user.id)
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if "posts_slug_key" in str(exc.orig):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A post with this slug already exists") from exc
+        raise
+    await db.refresh(post, attribute_names=["author", "categories", "tags"])
+>>>>>>> 5b4649e6f0aa8e6215d8efcc6203d1a3e6d8ed1e
     return post
 
 
 @router.patch("/{post_id}", response_model=PostRead)
 async def update_post(post_id: int, payload: PostUpdate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)) -> Post:
-    post = await db.get(Post, post_id)
+    post = await db.scalar(
+        select(Post)
+        .options(selectinload(Post.categories), selectinload(Post.tags))
+        .where(Post.id == post_id)
+    )
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     can_edit = user.role in {UserRole.ADMIN, UserRole.EDITOR} or (user.role == UserRole.AUTHOR and post.author_id == user.id and post.status == PostStatus.DRAFT)
@@ -148,8 +170,7 @@ async def update_post(post_id: int, payload: PostUpdate, db: AsyncSession = Depe
 
 @router.post("/{post_id}/publish", response_model=PostRead)
 async def publish_post(post_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR))) -> Post:
-    post = await db.get(Post, post_id)
-    if not post:
+    if not (post := await db.get(Post, post_id)):
         raise HTTPException(status_code=404, detail="Post not found")
     post.status = PostStatus.PUBLISHED
     post.published_at = datetime.now(UTC)
@@ -164,8 +185,7 @@ async def publish_post(post_id: int, db: AsyncSession = Depends(get_db), user: U
 async def schedule_post(post_id: int, published_at: datetime, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR))) -> Post:
     if published_at.tzinfo is None:
         raise HTTPException(status_code=422, detail="published_at must include a timezone")
-    post = await db.get(Post, post_id)
-    if not post:
+    if not (post := await db.get(Post, post_id)):
         raise HTTPException(status_code=404, detail="Post not found")
     post.status, post.published_at, post.editor_id = PostStatus.SCHEDULED, published_at, user.id
     await db.commit()
@@ -175,8 +195,7 @@ async def schedule_post(post_id: int, published_at: datetime, db: AsyncSession =
 
 @router.post("/{post_id}/unpublish", response_model=PostRead)
 async def unpublish_post(post_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR))) -> Post:
-    post = await db.get(Post, post_id)
-    if not post:
+    if not (post := await db.get(Post, post_id)):
         raise HTTPException(status_code=404, detail="Post not found")
     post.status, post.editor_id = PostStatus.DRAFT, user.id
     await db.commit()
@@ -187,8 +206,7 @@ async def unpublish_post(post_id: int, db: AsyncSession = Depends(get_db), user:
 
 @router.post("/{post_id}/flag-breaking", response_model=PostRead)
 async def flag_breaking(post_id: int, db: AsyncSession = Depends(get_db), _: User = Depends(require_roles(UserRole.ADMIN, UserRole.EDITOR))) -> Post:
-    post = await db.get(Post, post_id)
-    if not post:
+    if not (post := await db.get(Post, post_id)):
         raise HTTPException(status_code=404, detail="Post not found")
     post.is_breaking = True
     await db.commit()
