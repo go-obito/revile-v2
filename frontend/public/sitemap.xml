@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="https://www.xml-sitemaps.com/css/sitemap.css"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+       <loc>https://revile.site/</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>1.0000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/search</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/posts/discord-age-verification-system</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/posts/australia-ai-policy</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/posts/now-we-can-do-everything-with-ai</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/posts/amazon-calls-for-stronger-ai-safety-measures-as-ai-debate-intensifies</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/posts/zuckerberg-says-ai-labs-have-enough-incentives-to-build-safely</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/categories/ai</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/categories/hardware</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/categories/policy</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/categories/startups</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.8000</priority>
+  </url>
+  <url>
+       <loc>https://revile.site/login?next=%2Fadmin</loc>
+       <lastmod>2026-09-24T10:56:57+00:00</lastmod>
+       <priority>0.6400</priority>
+  </url>
+</urlset>
